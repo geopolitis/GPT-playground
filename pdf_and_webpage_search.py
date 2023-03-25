@@ -146,7 +146,7 @@ def answer_question(docs, query):
 
 def main():
     raw_text = read_from_PDF()
-    webpage = input("Enter a web page: ")
+    webpage = input("Enter a web page (https://www.example.com): ")
     web_text = read_from_web(webpage)
     raw_text.extend(web_text)
     texts = split_text(raw_text)
