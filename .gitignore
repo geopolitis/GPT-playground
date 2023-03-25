@@ -1,0 +1,13 @@
+# Create a gitignore file for this repository
+.env
+Data/
+Index/
+Models/
+.DS_Store
+*.log
+*.swp
+*.swo
+*.swn
+*.pkl
+*.pickle
+__pycache__
