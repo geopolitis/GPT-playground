@@ -1,8 +1,20 @@
 
 
-# Question & Answering Document and websites using GPT models
+# Q & A Document and websites using GPT models
 
-This Python scripts using the langchain library to search a directory of PDF files for relevant documents, extract their text, and store their embeddings using OpenAI's GPT language model. It then performs a similarity search on the stored embeddings to retrieve the most relevant documents for a given query. Finally, it uses OpenAI's GPT model to answer a user's question including the retrieved documents.
+This Python scripts using the langchain library to search a directory for relevant PDF documents, extract their text, and store their embeddings using OpenAI's GPT language model. Then performs a similarity search on the stored embeddings to retrieve the most relevant documents for a given query. Finally, it uses OpenAI's GPT model to answer a user's question including the retrieved documents.
+
+Within this repository there are several scripts created prograsivly during my tests. 
+
+## Scripts
+
+|Name|Description|
+|----|---|
+|document_search.py|Simple script loading PDF files|
+|pdf_and_webpage_search.py| Stript stuctured in funtions, with some error handlers|
+|Flask_pdf_webpages_search.py| Flask application|
+|--|---|
+
 
 ## Prerequisites
 
@@ -12,17 +24,16 @@ This Python scripts using the langchain library to search a directory of PDF fil
 - python-dotenv library (`pip install python-dotenv`)
 - OpenAI library (`pip install openai`)
 - Pickle library (`pip install pickle`)
+- Flask (`pip install flaks`)
 - OpenAI API credentials
 
 ## Setup
 
-1. Install Python 3.x and the necessary libraries by running the following command:
+1. Install the prerequisites
 
-2. pip install langchain faiss python-dotenv openai
+2. Get OpenAI API credentials by following [these instructions](https://beta.openai.com/docs/developer-quickstart/your-api-keys).
 
-3. Get OpenAI API credentials by following [these instructions](https://beta.openai.com/docs/developer-quickstart/your-api-keys).
-
-4. Create a `.env` file in the same directory as the script, and add the following variables(feel free to use the env-sample file):
+3. Create a `.env` file in the same directory as the script, and add the following variables(feel free to use the env-sample file). Availble models `text-embedding-ada-002`, `text-davinci-003`, `gpt-3.5-turbo`, `GPT-4`, and more. 	
 
 ```
 OPENAI_API_KEY=<your-api-key>
@@ -32,18 +43,18 @@ INDEX_STORE_DIRECTORY=/path/to/your/index/
 OPENAI_MODEL_NAME = 
 ```
 
-5. Save your PDF files in the directory specified by `DOCUMENT_STORE_DIRECTORY`.
+5. Save your PDF files tha you wantto discuss with your GPT in the directory specified by `DOCUMENT_STORE_DIRECTORY`.
 
 6. Run the script and enter your query when prompted.
-
 
 ## Usage
 
 1. Make sure you have files in the `DOCUMENT_STORE_DIRECTORY`
 2. Run the script using `python pdf_and_webpage_search.py`.
-3. Ender website when prompted
-4. Enter your query when prompted.
-5. The script will return the answer to your question based on the most relevant documents found in the specified directory.
+3. For Flask run `flask -A Flask_pdf_webpages_search.py run`
+4. Ender website when prompted from CLI or http://127.0.0.1:5000
+5. Enter your query when prompted.
+6. The script will return the answer to your question based on the most relevant documents found in the specified directory.
 
 ## Notes
 
