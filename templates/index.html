@@ -4,10 +4,11 @@
 	<title>Ask your GPT</title>
 	<!-- Add your CSS stylesheets and JavaScript files here -->
 	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-	<script src="{{ url_for('static', filename='main.js') }}"></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
 </head>
 <body>
-	<h1>Could you ask the GPT based on your ebmeddings Documents and the website below?</h1>
+	<h1>Ask GPT based on your embeddings</h1>
 	<p>Submit a URL and query to search for related content:</p>
 	<form action="{{ url_for('answer') }}" method="post">
 		<label for="webpage">Provide a web site (https://www.example.com):</label>
