@@ -1,16 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Question Answering Application</title>
+	<title>Ask your GPT</title>
+	<!-- Add your CSS stylesheets and JavaScript files here -->
+	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+	<script src="{{ url_for('static', filename='main.js') }}"></script>
 </head>
 <body>
-    <h1>Enter a question and a web page URL:</h1>
-    <form method="post" action="/answer">
-        <label for="query">Question:</label>
-        <input type="text" id="query" name="query"><br><br>
-        <label for="webpage">Web page URL:</label>
-        <input type="text" id="webpage" name="webpage"><br><br>
-        <input type="submit" value="Submit">
-    </form>
+	<h1>Could you ask the GPT based on your ebmeddings Documents and the website below?</h1>
+	<p>Submit a URL and query to search for related content:</p>
+	<form action="{{ url_for('answer') }}" method="post">
+		<label for="webpage">Provide a web site (https://www.example.com):</label>
+		<input type="text" id="webpage" name="webpage" required>
+		<label for="query">Ask your GPT:</label>
+		<input type="text" id="query" name="query" required>
+		<input type="submit" value="Search">
+	</form>
+	<div id="result">
+		{% if result %}
+		<h2>Result:</h2>
+		<p>{{ result }}</p>
+		{% endif %}
+	</div>
 </body>
 </html>
