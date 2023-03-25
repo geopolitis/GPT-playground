@@ -1,6 +1,8 @@
-# Document Search and Question Answering using GPT
 
-This Python script uses the langchain library to search a directory of PDF files for relevant documents, extract their text, and store their embeddings using OpenAI's GPT language model. It then performs a similarity search on the stored embeddings to retrieve the most relevant documents for a given query. Finally, it uses OpenAI's text-davinci-003 model to answer a user's question including the retrieved documents.
+
+# Question & Answering Document and websites using GPT models
+
+This Python scripts using the langchain library to search a directory of PDF files for relevant documents, extract their text, and store their embeddings using OpenAI's GPT language model. It then performs a similarity search on the stored embeddings to retrieve the most relevant documents for a given query. Finally, it uses OpenAI's GPT model to answer a user's question including the retrieved documents.
 
 ## Prerequisites
 
@@ -9,6 +11,7 @@ This Python script uses the langchain library to search a directory of PDF files
 - FAISS library (`pip install faiss`)
 - python-dotenv library (`pip install python-dotenv`)
 - OpenAI library (`pip install openai`)
+- Pickle library (`pip install pickle`)
 - OpenAI API credentials
 
 ## Setup
@@ -19,14 +22,15 @@ This Python script uses the langchain library to search a directory of PDF files
 
 3. Get OpenAI API credentials by following [these instructions](https://beta.openai.com/docs/developer-quickstart/your-api-keys).
 
-4. Create a `.env` file in the same directory as the script, and add the following variables:
+4. Create a `.env` file in the same directory as the script, and add the following variables(feel free to use the env-sample file):
 
-DOCUMENT_STORE_DIRECTORY=/path/to/your/documents
-
-INDEX_STORE_DIRECTORY=/path/to/your/index
-
+```
 OPENAI_API_KEY=<your-api-key>
-
+OPENAI_API_KEY=<YOU OPENAI API KEY>
+DOCUMENT_STORE_DIRECTOR=/path/to/your/documents/
+INDEX_STORE_DIRECTORY=/path/to/your/index/
+OPENAI_MODEL_NAME = 
+```
 
 5. Save your PDF files in the directory specified by `DOCUMENT_STORE_DIRECTORY`.
 
@@ -35,11 +39,11 @@ OPENAI_API_KEY=<your-api-key>
 
 ## Usage
 
-1. Run the script using `python document_search.py`.
-
-2. Enter your query when prompted.
-
-3. The script will return the answer to your question based on the most relevant documents found in the specified directory.
+1. Make sure you have files in the `DOCUMENT_STORE_DIRECTORY`
+2. Run the script using `python pdf_and_webpage_search.py`.
+3. Ender website when prompted
+4. Enter your query when prompted.
+5. The script will return the answer to your question based on the most relevant documents found in the specified directory.
 
 ## Notes
 
@@ -48,4 +52,21 @@ OPENAI_API_KEY=<your-api-key>
 - The script caches API responses to avoid making redundant requests. Cached responses are stored in a pickle file specified by `cache_path`. If the script is run again with the same query, the cached response will be used instead of making a new API request.
 - The script uses OpenAI's text-davinci-003 model for question answering, but other models can be used by changing the `model_name` parameter in `OpenAI()`.
 
+Here's a brief overview of what each function in the script does:
 
+- ']`read_from_web()` Reads content from a given web page URL (default: None) using the WebBaseLoader module from langchain.document_loaders.
+- `read_from_PDF():` Reads all PDF files in the document store directory specified by the DOCUMENT_STORE_DIRECTORY environment variable, using the PyPDFLoader module from langchain.document_loaders.
+- `split_text():` Splits the raw text into smaller chunks of text using the CharacterTextSplitter module from langchain.text_splitter.
+- `create_embeddings():` Generates OpenAI embeddings for each text chunk using the OpenAIEmbeddings module from langchain.embeddings.
+- `read_embeddings():` Reads the embeddings from file.
+- `create_index():` Creates a FAISS index for the embeddings using the FAISS module from langchain.vectorstores.
+- `search_documents():` Searches the documents for a given query using the FAISS index generated in the previous step and returns a list of documents.
+- `answer_question():` Uses OpenAI's GPT model to answer the given question using the documents returned in the previous step and returns the answer.
+- `main():` Runs the entire process and allows the user to input the web page URL and the question they want to ask.
+
+## Disclaimer 
+This project is experimental and provided as-is, without any warranty or guarantee of its effectiveness, suitability or reliability. The developers and contributors of this project will not be held responsible for any damage, loss or disruption of data, equipment or business that may arise from the use of this project. Use it at your own risk.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.

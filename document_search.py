@@ -19,6 +19,7 @@ for filename in os.listdir(os.getenv('DOCUMENT_STORE_DIRECTOR')):
         filepath = os.path.join(os.getenv('DOCUMENT_STORE_DIRECTOR'), filename)
         read = PyPDFLoader(filepath)
 raw_text = read.load()
+
 text_splitter = CharacterTextSplitter(
     separator = "\n",
     chunk_size = 1000,
