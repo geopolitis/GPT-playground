@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Ask your GPT   </h1>
+    <div class="chat-container">
+        <div id="chatbox" class="chatbox">
+            <!-- Chat messages will be appended here -->
+        </div>
+        <div class="input-container">
+            <input id="input" type="text" placeholder="Type your message...">
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+    <div id="token-info"></div>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
