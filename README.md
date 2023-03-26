@@ -11,7 +11,7 @@ Within this repository there are several scripts created prograsivly during my t
 |Name|Description|
 |----|---|
 |document_search.py|Simple script creates embeddings from PDF files in a directory|
-|pdf_and_webpage_search.py| Stript stuctured in funtions, with some error handlers|
+|pdf_and_webpage_search.py| Stript stuctured in funtions, with error handlers creates embeddings from your own documents and webpages and questioning them|
 |Flask_pdf_webpages_search.py| Flask application creates embeddings from PDF files and webpages|
 |Chatbot/Flask_chatbot_app.py|Flask application with GPT chat funtionality|
 |--|---|
