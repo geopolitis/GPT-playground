@@ -10,9 +10,10 @@ Within this repository there are several scripts created prograsivly during my t
 
 |Name|Description|
 |----|---|
-|document_search.py|Simple script loading PDF files|
+|document_search.py|Simple script creates embeddings from PDF files in a directory|
 |pdf_and_webpage_search.py| Stript stuctured in funtions, with some error handlers|
-|Flask_pdf_webpages_search.py| Flask application|
+|Flask_pdf_webpages_search.py| Flask application creates embeddings from PDF files and webpages|
+|Chatbot/Flask_chatbot_app.py|Flask application with GPT chat funtionality|
 |--|---|
 
 
@@ -37,7 +38,6 @@ Within this repository there are several scripts created prograsivly during my t
 
 ```
 OPENAI_API_KEY=<your-api-key>
-OPENAI_API_KEY=<YOU OPENAI API KEY>
 DOCUMENT_STORE_DIRECTOR=/path/to/your/documents/
 INDEX_STORE_DIRECTORY=/path/to/your/index/
 OPENAI_MODEL_NAME = 
@@ -75,9 +75,14 @@ Here's a brief overview of what each function in the script does:
 - `answer_question():` Uses OpenAI's GPT model to answer the given question using the documents returned in the previous step and returns the answer.
 - `main():` Runs the entire process and allows the user to input the web page URL and the question they want to ask.
 
-## Disclaimer 
-This project is experimental and provided as-is, without any warranty or guarantee of its effectiveness, suitability or reliability. The developers and contributors of this project will not be held responsible for any damage, loss or disruption of data, equipment or business that may arise from the use of this project. Use it at your own risk.
+## Disclaimer
+This project serves solely as a learning resource and a showcase of its capabilities. The creator bears no liability for any improper usage of the code or any harm that may ensue. Users must assume responsibility for their actions when operating the chatbot and comply with OpenAI's usage guidelines. The project is distributed on an "as-is" basis, devoid of any warranties or assurances regarding its efficacy, appropriateness, or dependability. The developers and contributors of this project disclaim any responsibility for damage, loss, or disruption to data, equipment, or business that might arise from utilizing this project. Proceed at your own peril.
 
 ## License
+MIT License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
