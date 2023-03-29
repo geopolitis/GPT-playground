@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Ask your GPT</h1>
+        <div class="chat-container">
+            <div id="chatbox" class="chatbox">
+                <!-- Chat messages will be appended here -->
+            </div>
+            <div class="input-container flex-col">
+                <input id="input" type="text" placeholder="Type your message...">
+                <input id="webpage-input" type="text" placeholder="Enter the URL of a webpage...">
+                <div class="btn-container flex-row">
+                    <button id="webpage-btn"class="btn">Submit webpage</button>
+                    <button id="send-btn" class="btn">Send</button>
+                </div>
+            </div>
+            <div id="token-info"></div>
+        </div>
+    </div>
+    <script src="static/main.js"></script>
+</body>
+</html>
