@@ -195,15 +195,21 @@ def search_documents(query, docsearch):
         return []
 def answer_question(docs, query):
     """
-    Answer the given question using OpenAI's GPT model
+    Answer the given question using OpenAI's GPT model and searching our own knowledge base. Returns the answer with the SOURCE of the answer.
     """
-    chain = load_qa_chain(OpenAI(model_name=OPENAI_MODEL_NAME, temperature=OPENAI_TEMPERATURE), chain_type="stuff")
-    result = chain.run(input_documents=docs, question=query)
+    from langchain.chains.qa_with_sources import load_qa_with_sources_chain
+    chain = load_qa_with_sources_chain(OpenAI(model_name=OPENAI_MODEL_NAME, temperature=OPENAI_TEMPERATURE), chain_type="stuff")
+    result = chain.run(input_documents=docs, question=query).strip()
+
     return result
 
 def get_prompt(input):
+    """
+    Create the prompt for the OpenAI GPT model as required by the Chat Completion endpoint.
+    """
     context = []
     messages.append(input.strip())
+    
     for index, message in enumerate(messages):
         if index % 2 == 0:
             context.append({"role": "system", "content": "The following is a conversation between a user and an AI assistant. The AI assistant provides helpful and accurate information to the user."})
@@ -226,12 +232,12 @@ def create_chat_completion(emb_results, user_input):
                  "The given context does not provide"]
     pattern = '|'.join(map(re.escape, sentences))
     if re.search(pattern, emb_results):
-        print("I am here", user_input, emb_results, "Gia na doume" )
+        print("I am here User Inpute:", user_input, "Embeddinds Result: ", emb_results )
         try: 
             completion = openai.ChatCompletion.create(
                 model=OPENAI_MODEL_NAME,
                 messages=get_prompt(user_input),
-                temperature=0.9,
+                temperature=OPENAI_TEMPERATURE,
                 max_tokens=1500,
                 n=1
             )
@@ -279,12 +285,12 @@ def submit_webpage():
             embeddings = create_embeddings(texts)
             embeddings = read_embeddings()
             docsearch = create_index(texts, embeddings)
-            
-            return 'URL submitted successfully'
+            return jsonify({"status": "success", "message": "New URL submitted successfully to your embeddings."})
+
         except Exception as Oops:
             print(traceback.format_exc())
             print(Oops)
-            return 'Error in Load new URLs  %s' %'}'
+            return jsonify({"status": "error", "message": "An error occurred while processing the webpage. Please try again."}), 400
         
 @app.route('/chat', methods=['POST'])
 def chat():
