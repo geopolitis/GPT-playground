@@ -13,6 +13,9 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.llms import OpenAI
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS
+from colorama import init, Fore, Style
+
+init(autoreset=True)
 
 app = Flask(__name__)
 
@@ -66,6 +69,23 @@ def read_from_web(webpage=None):
     raw_text.extend(web_loader.load())
     return raw_text
 
+def read_from_webpages_url():
+    """
+    Read content from web pages listed in the WEBPAGES_URLS environment variable
+    """
+    webpages_urls = os.getenv("WEBPAGES_URLS")
+    if webpages_urls:
+        urls = webpages_urls.split(",")
+        raw_text = []
+        for url in urls:
+            url = url.strip()
+            raw_text.extend(read_from_web(url))
+        return raw_text
+    else:
+        warning_msg = "WEBPAGES_URLS environment variable not set or empty."
+        logger.warning(Fore.YELLOW + warning_msg)
+        return []
+
 def read_from_PDF():
     """
     Read all PDF files in the document store directory and concatenate the text
@@ -74,12 +94,20 @@ def read_from_PDF():
         raise ValueError("DOCUMENT_STORE_DIRECTOR environment variable not set")
     if not os.path.isdir(DOCUMENT_STORE_DIRECTORY):
         raise ValueError(f"{DOCUMENT_STORE_DIRECTORY} is not a directory")
+
     raw_text = []
-    for filename in os.listdir(os.getenv('DOCUMENT_STORE_DIRECTOR')):
-        if filename.endswith('.pdf'):
-            filepath = os.path.join(os.getenv('DOCUMENT_STORE_DIRECTOR'), filename)
+    # Gather files
+    pdf_files = [filename for filename in os.listdir(DOCUMENT_STORE_DIRECTORY) if filename.lower().endswith('.pdf')]
+
+    if pdf_files:
+        for filename in pdf_files:
+            filepath = os.path.join(DOCUMENT_STORE_DIRECTORY, filename)
             pdf_loader = PyPDFLoader(filepath)
             raw_text.extend(pdf_loader.load())
+    else:
+        warning_msg = "No PDF files found in the document store directory."
+        logger.warning(Fore.YELLOW + warning_msg)
+
     return raw_text
 
 def split_text(raw_text):
@@ -113,8 +141,18 @@ def create_index(texts, embeddings):
     """
     Create a FAISS index for the text chunks
     """
-    docsearch = FAISS.from_documents(texts, embeddings)
-    return docsearch
+    try:
+        if not texts or not embeddings:
+            warning_msg = "No texts or embeddings found. Skipping index creation."
+            logger.warning(Fore.YELLOW + warning_msg)
+            return None
+
+        docsearch = FAISS.from_documents(texts, embeddings)
+        return docsearch
+    except Exception as e:
+        error_msg = f"An error occurred during index creation: {e}"
+        logger.error(Fore.RED + error_msg)
+        return None
 
 def read_embeddings():
     """
@@ -129,21 +167,32 @@ def search_documents(query, docsearch):
     """
     Search the documents for the given query
     """
-    cache_path = os.path.join(INDEX_STORE_DIRECTORY, 'openai_cache.pkl')
-    if os.path.exists(cache_path):
-        with open(cache_path, 'rb') as f:
-            cache = pickle.load(f)
-    else:
-        cache = {}
-    if query in cache:
-        docs = cache[query]
-    else:
-        docs = docsearch.similarity_search(query)
-        cache[query] = docs
-        with open(cache_path, 'wb') as f:
-            pickle.dump(cache, f)
-    return docs
+    if docsearch is None:
+        warning_msg = "No index available for searching documents. Skipping search."
+        logger.warning(Fore.YELLOW + warning_msg)
+        return []
 
+    try:
+        cache_path = os.path.join(INDEX_STORE_DIRECTORY, 'openai_cache.pkl')
+        if os.path.exists(cache_path):
+            with open(cache_path, 'rb') as f:
+                cache = pickle.load(f)
+        else:
+            cache = {}
+        
+        if query in cache:
+            docs = cache[query]
+        else:
+            docs = docsearch.similarity_search(query)
+            cache[query] = docs
+            with open(cache_path, 'wb') as f:
+                pickle.dump(cache, f)
+        
+        return docs
+    except Exception as e:
+        error_msg = f"An error occurred during document search: {e}"
+        logger.error(Fore.RED + error_msg)
+        return []
 def answer_question(docs, query):
     """
     Answer the given question using OpenAI's GPT model
@@ -202,15 +251,14 @@ def tokens_calc():
     return "Used tokens: " + str(count_tokens) + " (" + format(cost, '.5f') + " USD)"
 
 # Logic
-raw_text=read_from_web()
-raw_text=read_from_PDF()
-texts=split_text(raw_text)
-embeddings=create_embeddings(texts)
-embeddings= read_embeddings()
-docsearch=create_index(texts, embeddings)
+raw_text = read_from_webpages_url()
+raw_text.extend(read_from_PDF())
+texts = split_text(raw_text)
+embeddings = create_embeddings(texts)
+embeddings = read_embeddings()
+docsearch = create_index(texts, embeddings)
 
 # Routes
-
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
@@ -220,15 +268,24 @@ def submit_webpage():
     import traceback
     while True:
         try:
+            global raw_text, texts, embeddings, docsearch
+            
             data = request.get_json()
             webpage = data.get('webpage')
-            read_from_web(webpage)
+            new_content = read_from_web(webpage)
+            raw_text.extend(new_content)
+            
+            texts = split_text(raw_text)
+            embeddings = create_embeddings(texts)
+            embeddings = read_embeddings()
+            docsearch = create_index(texts, embeddings)
+            
             return 'URL submitted successfully'
         except Exception as Oops:
             print(traceback.format_exc())
             print(Oops)
             return 'Error in Load new URLs  %s' %'}'
-
+        
 @app.route('/chat', methods=['POST'])
 def chat():
     while True:
