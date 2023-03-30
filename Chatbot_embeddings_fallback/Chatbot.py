@@ -193,6 +193,7 @@ def search_documents(query, docsearch):
         error_msg = f"An error occurred during document search: {e}"
         logger.error(Fore.RED + error_msg)
         return []
+
 def answer_question(docs, query):
     """
     Answer the given question using OpenAI's GPT model and searching our own knowledge base. Returns the answer with the SOURCE of the answer.
@@ -230,8 +231,11 @@ def create_chat_completion(emb_results, user_input):
                  "There is no information",
                  "No, there is no information",
                  "The given context does not provide"]
-    pattern = '|'.join(map(re.escape, sentences))
-    if re.search(pattern, emb_results):
+    
+    # Use a list comprehension to create a list of compiled regex patterns
+    patterns = [re.compile(re.escape(sentence)) for sentence in sentences]
+    # Check if any pattern matches at the beginning of emb_results
+    if any(pattern.match(emb_results) for pattern in patterns):
         print("I am here User Inpute:", user_input, "Embeddinds Result: ", emb_results )
         try: 
             completion = openai.ChatCompletion.create(
@@ -268,6 +272,10 @@ docsearch = create_index(texts, embeddings)
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
+
+@app.route('/roles')
+def roles():
+    return render_template('roles.html')
 
 @app.route('/webpage', methods=['POST'])
 def submit_webpage():
@@ -306,6 +314,52 @@ def chat():
         except Exception as Oooooops:
             print(Oooooops)
             return jsonify({"response": "Huston we have a problem!!!!!!!! %s" %"}"})
-            
+
+from flask_redis import FlaskRedis
+from redis.exceptions import ConnectionError
+from flask_cors import CORS
+app.config['REDIS_URL'] = 'redis://localhost:6379/0'
+redis_client = FlaskRedis(app)
+CORS(app)
+
+@app.errorhandler(ConnectionError)
+def handle_connection_error(e):
+    return 'Redis server not available', 500
+
+@app.route('/Create_New_Role', methods=['POST'])
+def create_new_role():
+    try:
+        role_name = request.form['Role_name']
+        role_content = request.form['Role_content']
+        if redis_client.hexists('roles', role_name):
+            return 'Role with this name already exists', 400
+        else:
+            redis_client.hset('roles', role_name, role_content)
+            return 'Role created', 201
+    except ConnectionError as e:
+        return handle_connection_error(e)
+
+@app.route('/Get_Roles', methods=['GET'])
+def get_roles():
+    try:
+        roles = redis_client.hgetall('roles')
+        roles_dict = {k.decode(): v.decode() for k, v in roles.items()}
+        return roles_dict
+    except ConnectionError as e:
+        return handle_connection_error(e)
+
+@app.route('/Delete_Role', methods=['POST'])
+def delete_role():
+    try:
+        role_name = request.form['Role_name']
+        if redis_client.hexists('roles', role_name):
+            redis_client.hdel('roles', role_name)
+            return 'Role deleted', 200
+        else:
+            return 'Role not found', 404
+    except ConnectionError as e:
+        return handle_connection_error(e)
+
+
 if __name__ == '__main__':
     app.run(debug=True)

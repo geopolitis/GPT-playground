@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Roles</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='roles.css') }}">
+  </head>
+  <body>
+    <h1>Roles</h1>
+    <h2>Create a new role</h2>
+    <form id="create-role-form">
+      <label for="role-name">Role name:</label>
+      <input type="text" id="role-name" name="role-name"><br><br>
+      <label for="role-content">Role content:</label>
+      <input type="text" id="role-content" name="role-content"><br><br>
+      <input type="submit" value="Submit">
+    </form>
+    <p id="create-role-message"></p>
+    <h2>Get all roles</h2>
+    <button type="submit" id="get-roles-button">Get roles</button>
+    <ul id="roles-list"></ul>
+    <h2>Delete a role</h2>
+    <form id="delete-role-form">
+      <label for="delete-role-name">Role name:</label>
+      <input type="text" id="delete-role-name" name="delete-role-name"><br><br>
+      <input type="submit" value="Submit">
+    </form>
+    <p id="delete-role-message"></p>
+    <script src="{{ url_for('static', filename='roles.js') }}"></script>
+  </body>
+</html>

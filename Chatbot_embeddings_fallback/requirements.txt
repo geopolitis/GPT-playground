@@ -10,6 +10,7 @@ tokenizers
 transformers
 Flask 
 flask-cors 
+redis
 faiss-cpu 
 gradio 
 scipy 
