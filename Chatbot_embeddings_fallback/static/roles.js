@@ -38,22 +38,20 @@ getRolesButton.addEventListener('click', () => {
         .catch(error => alert(error));
 });
 
-const deleteRoleForm = document.querySelector('#delete-role-form');
-const deleteRoleNameInput = document.querySelector('#delete-role-name');
-const deleteRoleMessage = document.querySelector('#delete-role-message');
+const getRoleForm = document.querySelector('#get-role-form');
+const getRoleNameInput = document.querySelector('#get-role-name');
+const getRoleMessage = document.querySelector('#get-role-message');
 
-deleteRoleForm.addEventListener('submit', (event) => {
+getRoleForm.addEventListener('submit', (event) => {
     event.preventDefault();
-    const roleName = deleteRoleNameInput.value;
-    fetch(`${API_URL}/Delete_Role`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: `Role_name=${roleName}`
-    })
-        .then(response => response.text())
-        .then(data => deleteRoleMessage.textContent = data)
-        .catch(error => deleteRoleMessage.textContent = error);
+    const roleName = getRoleNameInput.value;
+    fetch(`${API_URL}/Get_Roles?name=${roleName}`)
+        .then(response => response.json())
+        .then(role => {
+            getRoleMessage.innerHTML = '';
+            for (const [roleName, roleContent] of Object.entries(role)) {
+                getRoleMessage.textContent = `${roleName}: ${roleContent}`;
+            }
+        })
+        .catch(error => getRoleMessage.textContent = error);
 });
-

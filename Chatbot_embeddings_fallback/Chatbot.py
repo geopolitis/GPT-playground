@@ -208,12 +208,18 @@ def get_prompt(input):
     """
     Create the prompt for the OpenAI GPT model as required by the Chat Completion endpoint.
     """
+    role_name = 'CFOgpt'
+    prompt = 'Act as a professional and knowledgeable peroson'
     context = []
     messages.append(input.strip())
-    
+    role_content = redis_client.hget('roles', role_name)
+    if role_content:
+        prompt = role_content.decode()
+        
+    print("Prompt : ", prompt)
     for index, message in enumerate(messages):
         if index % 2 == 0:
-            context.append({"role": "system", "content": "The following is a conversation between a user and an AI assistant. The AI assistant provides helpful and accurate information to the user."})
+            context.append({"role": "system", "content": prompt})
             context.append({"role": "user", "content": message})
         else:
             context.append({"role": "assistant", "content": message})
@@ -342,12 +348,21 @@ def create_new_role():
 @app.route('/Get_Roles', methods=['GET'])
 def get_roles():
     try:
-        roles = redis_client.hgetall('roles')
-        roles_dict = {k.decode(): v.decode() for k, v in roles.items()}
-        return roles_dict
+        name = request.args.get('name')
+        if name:
+            role_content = redis_client.hget('roles', name)
+            if role_content:
+                print(role_content.decode())
+                return {name: role_content.decode()}
+            else:
+                return 'Role not found', 404
+        else:
+            roles = redis_client.hgetall('roles')
+            roles_dict = {k.decode(): v.decode() for k, v in roles.items()}
+            return roles_dict
     except ConnectionError as e:
         return handle_connection_error(e)
-
+    
 @app.route('/Delete_Role', methods=['POST'])
 def delete_role():
     try:

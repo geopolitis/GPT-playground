@@ -16,8 +16,15 @@
     </form>
     <p id="create-role-message"></p>
     <h2>Get all roles</h2>
-    <button type="submit" id="get-roles-button">Get roles</button>
+    <button id="get-roles-button">Get roles</button>
     <ul id="roles-list"></ul>
+    <h2>Get a role by name</h2>
+    <form id="get-role-form">
+      <label for="get-role-name">Role name:</label>
+      <input type="text" id="get-role-name" name="get-role-name"><br><br>
+      <input type="submit" value="Submit">
+    </form>
+    <p id="get-role-message"></p>
     <h2>Delete a role</h2>
     <form id="delete-role-form">
       <label for="delete-role-name">Role name:</label>
