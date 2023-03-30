@@ -14,7 +14,7 @@ Within this repository there are several scripts created prograsivly during my t
 |pdf_and_webpage_search.py| Stript stuctured in funtions, with error handlers creates embeddings from your own documents and webpages and questioning them|
 |Flask_pdf_webpages_search.py| Flask application creates embeddings from PDF files and webpages|
 |Chatbot/Flask_chatbot_app.py|Flask application with GPT chat funtionality|
-|Chatbot_embeddings_fallback/Chatbot.py| Flask applications with GPT functionality create embedding from PDF files and webpages and make queries to files, and fall back to the model's when the embeddings do not have sufficient information. |
+|Chatbot_embeddings_fallback/Chatbot.py| Flask applications with GPT functionality create embedding from PDF files and webpages and make queries to those embeddings, and fall back to the model's knowledge when the embeddings do not have sufficient information. |
 
 
 ## Prerequisites
