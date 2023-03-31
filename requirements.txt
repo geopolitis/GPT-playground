@@ -13,6 +13,7 @@ flask-cors
 faiss-cpu 
 gradio 
 scipy 
+sklearn
 numpy 
 requests
 colorama
