@@ -7,6 +7,7 @@ import logging
 import openai
 import tiktoken
 from flask import Flask, request, render_template, jsonify
+from flask_restx import Api, Resource
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 from langchain.chains.question_answering import load_qa_chain
@@ -16,10 +17,18 @@ from langchain.llms import OpenAI
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS
 from colorama import init, Fore, Style
+from flask_redis import FlaskRedis
+from redis.exceptions import ConnectionError
+from flask_cors import CORS
 
 init(autoreset=True)
 
 app = Flask(__name__)
+CORS(app)
+app.config['REDIS_URL'] = 'redis://localhost:6379/0'
+redis_client = FlaskRedis(app)
+
+api = Api(app, version='0.1', title='Ask Ophelia', description='GPT integration')
 
 # Configure the logging module
 logger = logging.getLogger(__name__)
@@ -297,37 +306,44 @@ embeddings = read_embeddings()
 docsearch = create_index(texts, embeddings)
 
 # Routes
-@app.route('/chat', methods=['POST'])
-def chat():
-    while True:
-        try:
-            user_input = request.json.get('input')
-            # Queries 
-            docs = search_documents( user_input, docsearch)
-            emb_result = answer_question(docs, user_input)
-            completion = create_chat_completion(user_input)
-            # Compare the answers
-            best_answer = compare_answers(completion, emb_result)
-            # Summarize the answers
-            #best_answer2 = summarize_answers(emb_result, completion)
-            token_info = tokens_calc()
-            return jsonify({"response": best_answer, "token_info": token_info})  
-        except Exception as Oooooops:
-            print(Oooooops)
-            return jsonify({"response": "Huston we have a problem!!!!!!!! %s" %"}"})
+@api.route('/chat')
+class Chat(Resource):
+    @api.doc(responses={200: 'Success', 500: 'Internal Server Error'}, description = 'Chat with the GPT')
+    def post(self):
+     while True:
+            try:
+                user_input = request.json.get('input')
+                # Queries 
+                docs = search_documents( user_input, docsearch)
+                emb_result = answer_question(docs, user_input)
+                completion = create_chat_completion(user_input)
+                # Compare the answers
+                best_answer = compare_answers(completion, emb_result)
+                # Summarize the answers
+                #best_answer2 = summarize_answers(emb_result, completion)
+                token_info = tokens_calc()
+                return jsonify({"response": best_answer, "token_info": token_info})  
+            except Exception as Oooooops:
+                print(Oooooops)
+            return jsonify({"response": "Huston we have a problem!!!!!!!! %s" %"}"}), 500
 
-@app.route('/', methods=['GET'])
-def index():
-    return render_template('index.html')
+@api.route('/')
+class Index(Resource):
+    @api.doc(responses={200: 'Success'}, description='Index endpoint')
+    def get(self):
+        return render_template('index.html')
+    
+@api.route('/roles')
+class Roles(Resource):
+    @api.doc(responses={200: 'Success'}, description='Roles endpoint')
+    def get(self):
+        return render_template('roles.html')
 
-@app.route('/roles')
-def roles():
-    return render_template('roles.html')
-
-@app.route('/webpage', methods=['POST'])
-def submit_webpage():
-    import traceback
-    while True:
+@api.route('/webpage')
+class Webpage(Resource):
+    @api.doc(responses={200: 'Success', 400: 'Bad Request'}, description='Webpage endpoint')
+    def post(self):
+        import traceback
         try:
             global raw_text, texts, embeddings, docsearch
             
@@ -347,60 +363,58 @@ def submit_webpage():
             print(Oops)
             return jsonify({"status": "error", "message": "An error occurred while processing the webpage. Please try again."}), 400
 
-from flask_redis import FlaskRedis
-from redis.exceptions import ConnectionError
-from flask_cors import CORS
-app.config['REDIS_URL'] = 'redis://localhost:6379/0'
-redis_client = FlaskRedis(app)
-CORS(app)
-
-@app.errorhandler(ConnectionError)
+@api.errorhandler(ConnectionError)
 def handle_connection_error(e):
     return 'Redis server not available', 500
 
-@app.route('/Create_New_Role', methods=['POST'])
-def create_new_role():
-    try:
-        role_name = request.form['Role_name']
-        role_content = request.form['Role_content']
-        if redis_client.hexists('roles', role_name):
-            return 'Role with this name already exists', 400
-        else:
-            redis_client.hset('roles', role_name, role_content)
-            return 'Role created', 201
-    except ConnectionError as e:
-        return handle_connection_error(e)
+@api.route('/Create_New_Role')
+class CreateNewRole(Resource):
+    @api.doc(responses={200: 'Success', 400: 'Bad Request'}, description='Create new role endpoint')
+    def post(self):
+        try:
+            role_name = request.form['Role_name']
+            role_content = request.form['Role_content']
+            if redis_client.hexists('roles', role_name):
+                return 'Role with this name already exists', 400
+            else:
+                redis_client.hset('roles', role_name, role_content)
+                return 'Role created', 201
+        except ConnectionError as e:
+            return handle_connection_error(e)
 
-@app.route('/Get_Roles', methods=['GET'])
-def get_roles():
-    try:
-        name = request.args.get('name')
-        if name:
-            role_content = redis_client.hget('roles', name)
-            if role_content:
-                print(role_content.decode())
-                return {name: role_content.decode()}
+@api.route('/Get_Roles')
+class GetRoles(Resource):
+    @api.doc(responses={200: 'Success', 404: 'Not Found'}, description='Get roles endpoint')
+    def get(self):
+        try:
+            name = request.args.get('name')
+            if name:
+                role_content = redis_client.hget('roles', name)
+                if role_content:
+                    print(role_content.decode())
+                    return {name: role_content.decode()}
+                else:
+                    return 'Role not found', 404
+            else:
+                roles = redis_client.hgetall('roles')
+                roles_dict = {k.decode(): v.decode() for k, v in roles.items()}
+                return roles_dict
+        except ConnectionError as e:
+            return handle_connection_error(e)
+    
+@api.route('/Delete_Role')
+class DeleteRole(Resource):
+    @api.doc(responses={200: 'Success', 404: 'Not Found'}, description='Delete role endpoint')
+    def post(self):
+        try:
+            role_name = request.form['Role_name']
+            if redis_client.hexists('roles', role_name):
+                redis_client.hdel('roles', role_name)
+                return 'Role deleted', 200
             else:
                 return 'Role not found', 404
-        else:
-            roles = redis_client.hgetall('roles')
-            roles_dict = {k.decode(): v.decode() for k, v in roles.items()}
-            return roles_dict
-    except ConnectionError as e:
-        return handle_connection_error(e)
-    
-@app.route('/Delete_Role', methods=['POST'])
-def delete_role():
-    try:
-        role_name = request.form['Role_name']
-        if redis_client.hexists('roles', role_name):
-            redis_client.hdel('roles', role_name)
-            return 'Role deleted', 200
-        else:
-            return 'Role not found', 404
-    except ConnectionError as e:
-        return handle_connection_error(e)
-
+        except ConnectionError as e:
+            return handle_connection_error(e)
 
 if __name__ == '__main__':
     app.run(debug=True)
