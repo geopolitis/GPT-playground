@@ -43,6 +43,12 @@
       <h2 class="text-2xl font-bold mb-4">Get all roles</h2>
       <button @click="getRoles" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Get roles</button>
     </div>
+
+    <!-- Display all roles -->
+    <h2 class="text-2xl font-bold mb-4">All roles</h2>
+    <ul class="list-none space-y-2">
+      <li v-for="(content, name) in roles" :key="name" class="p-2 bg-gray-100 rounded shadow font-mono">{{ name }}: {{ content }}</li>
+    </ul>
   </div>
 </template>
 
@@ -60,6 +66,7 @@ export default {
       deleteRoleMessage: "",
       searchRoleName: "",
       matchingRoles: {}, 
+      errorMessage: "",
     };
   },
   methods: {
@@ -79,9 +86,12 @@ export default {
       fetch(`${API_URL}/Get_Roles`)
         .then((response) => response.json())
         .then((roles) => {
-          this.roles = roles;
+            this.roles = roles;
+            this.errorMessage = ""; // Clear the error message when the request is successful
         })
-        .catch((error) => alert(error));
+        .catch((error) => {
+          this.errorMessage = error;
+        });
     },
     getMatchingRoles() {
       fetch(`${API_URL}/Get_Roles?name=${encodeURIComponent(this.searchRoleName)}`)
