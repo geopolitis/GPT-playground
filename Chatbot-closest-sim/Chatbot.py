@@ -7,19 +7,20 @@ import logging
 import openai
 import tiktoken
 from flask import Flask, request, render_template, jsonify
-from flask_restx import Api, Resource
+from flask_cors import CORS
+from flask_restx import Api, Resource, fields
+from flask_redis import FlaskRedis 
+from redis.exceptions import ConnectionError
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 from langchain.chains.question_answering import load_qa_chain
+from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.document_loaders import PyPDFLoader, WebBaseLoader
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.llms import OpenAI
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS
 from colorama import init, Fore, Style
-from flask_redis import FlaskRedis
-from redis.exceptions import ConnectionError
-from flask_cors import CORS
 
 init(autoreset=True)
 
@@ -209,7 +210,6 @@ def answer_question(docs, query):
     """
     Answer the given question using OpenAI's GPT model and searching our own knowledge base. Returns the answer with the SOURCE of the answer.
     """
-    from langchain.chains.qa_with_sources import load_qa_with_sources_chain
     chain = load_qa_with_sources_chain(OpenAI(model_name=OPENAI_MODEL_NAME, temperature=OPENAI_TEMPERATURE), chain_type="stuff")
     result = chain.run(input_documents=docs, question=query).strip()
     return result
@@ -367,9 +367,18 @@ class Webpage(Resource):
 def handle_connection_error(e):
     return 'Redis server not available', 500
 
+# OpenAPI Define models
+role_model = api.model('Role', {
+    'Role_name': fields.String(required=True, description='Role name'),
+    'Role_content': fields.String(required=True, description='Role content')
+})
+# OpenAPI Define namespaces
+roles_ns = api.namespace('roles', description='Roles operations')
+
 @api.route('/Create_New_Role')
 class CreateNewRole(Resource):
     @api.doc(responses={200: 'Success', 400: 'Bad Request'}, description='Create new role endpoint')
+    @api.expect(role_model, validate=True)  # Validate and document input payload
     def post(self):
         try:
             role_name = request.form['Role_name']
@@ -385,6 +394,7 @@ class CreateNewRole(Resource):
 @api.route('/Get_Roles')
 class GetRoles(Resource):
     @api.doc(responses={200: 'Success', 404: 'Not Found'}, description='Get roles endpoint')
+    @api.expect(role_model, validate=True)  # Validate and document input payload
     def get(self):
         try:
             name = request.args.get('name')
@@ -405,6 +415,8 @@ class GetRoles(Resource):
 @api.route('/Delete_Role')
 class DeleteRole(Resource):
     @api.doc(responses={200: 'Success', 404: 'Not Found'}, description='Delete role endpoint')
+    @api.expect(role_model, validate=True)  # Validate and document input payload
+
     def post(self):
         try:
             role_name = request.form['Role_name']
