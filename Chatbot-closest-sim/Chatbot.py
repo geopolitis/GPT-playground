@@ -307,7 +307,7 @@ docsearch = create_index(texts, embeddings)
 
 # Routes
 @api.route('/chat')
-class Chat(Resource):
+class chat(Resource):
     @api.doc(responses={200: 'Success', 500: 'Internal Server Error'}, description = 'Chat with the GPT')
     def post(self):
      while True:

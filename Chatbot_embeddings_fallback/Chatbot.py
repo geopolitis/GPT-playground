@@ -6,7 +6,7 @@ import pickle
 import logging
 import openai
 import tiktoken
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, make_response
 from langchain.chains.question_answering import load_qa_chain
 from langchain.document_loaders import PyPDFLoader, WebBaseLoader
 from langchain.embeddings import OpenAIEmbeddings
@@ -14,10 +14,17 @@ from langchain.llms import OpenAI
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS
 from colorama import init, Fore, Style
+from flask_redis import FlaskRedis
+from redis.exceptions import ConnectionError
+from flask_cors import CORS
 
 init(autoreset=True)
 
 app = Flask(__name__)
+
+app.config['REDIS_URL'] = 'redis://localhost:6379/0'
+redis_client = FlaskRedis(app)
+CORS(app)
 
 # Configure the logging module
 logger = logging.getLogger(__name__)
@@ -308,9 +315,9 @@ def submit_webpage():
         
 @app.route('/chat', methods=['POST'])
 def chat():
-    while True:
         try:
             user_input = request.json.get('input')
+            #print("----User Input----: ", user_input)
             # Queries 
             docs = search_documents( user_input, docsearch)
             emb_result = answer_question(docs, user_input)
@@ -320,13 +327,6 @@ def chat():
         except Exception as Oooooops:
             print(Oooooops)
             return jsonify({"response": "Huston we have a problem!!!!!!!! %s" %"}"})
-
-from flask_redis import FlaskRedis
-from redis.exceptions import ConnectionError
-from flask_cors import CORS
-app.config['REDIS_URL'] = 'redis://localhost:6379/0'
-redis_client = FlaskRedis(app)
-CORS(app)
 
 @app.errorhandler(ConnectionError)
 def handle_connection_error(e):
@@ -374,7 +374,6 @@ def delete_role():
             return 'Role not found', 404
     except ConnectionError as e:
         return handle_connection_error(e)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
