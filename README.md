@@ -2,7 +2,7 @@
 
 # Q & A Document and websites using GPT models
 
-This Python app is using the langchain library to search a data directory for PDF documents, extract their text, and store their embeddings using OpenAI's GPT language model. Then performs a similarity search on the stored embeddings to retrieve the most relevant documents for a given query. Finally, it uses OpenAI's GPT model to answer a user's question including the retrieved source documents.
+This Python app is using the langchain library to search a data directory for PDF documents, extract their text, and store their embeddings using OpenAI's GPT language model. Then performs a similarity search on the stored embeddings to retrieve the most relevant documents for a given query. Finally, it uses OpenAI's GPT model to answer a user's question including the retrieved source documents it does the same with websites or combine the sources.
 
 Within this repository there are several scripts created prograsivly during my tests. 
 
